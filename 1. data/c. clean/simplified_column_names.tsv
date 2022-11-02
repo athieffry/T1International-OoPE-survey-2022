@@ -1,0 +1,142 @@
+renamed_column	initial_name_column
+id	Record ID
+survey_id	Survey Identifier
+timestamp	Survey Timestamp
+consent	"By clicking 'agree' below, you are e-signing this form and agree to the following:  I have read this information and have had time to consider whether to take part in this study. I understand that my participation is voluntary (it is my choice) and that I am free to withdraw from the research study at any time without disadvantage.  I agree that the data can be used in the publication of scientific and research work. I agree that the information collected in this study will be stored in a protected archive where it may be available for future research. I understand that by authorizing the use of my personal data obtained in this survey, data privacy laws might not apply or no longer protect my information.  I have read this consent form. I understand that I can refuse to participate in this project. I have taken time to think carefully about my decision to participate. I freely consent to share my data with this research project."
+major	I am 18 years old or older
+T1con	What is your connection to type 1 diabetes?
+gender	What is your gender?
+gender_other_desc	"If other, please specify"
+gender_transgender	Do you identify as transgender?
+country_name	What country do you live in? 
+race_asian	"Which of these do you identify with? (Choose all that apply)  Note: our surveys are global, so we have chosen very broad categories to cover as many identities as possible, with the option to write in yours specifically.   (choice=Asian)"
+race_black	"Which of these do you identify with? (Choose all that apply)  Note: our surveys are global, so we have chosen very broad categories to cover as many identities as possible, with the option to write in yours specifically.   (choice=Black/African/African American)"
+race_hisp	"Which of these do you identify with? (Choose all that apply)  Note: our surveys are global, so we have chosen very broad categories to cover as many identities as possible, with the option to write in yours specifically.   (choice=Hispanic/Latino/Mestizo)"
+race_indig	"Which of these do you identify with? (Choose all that apply)  Note: our surveys are global, so we have chosen very broad categories to cover as many identities as possible, with the option to write in yours specifically.   (choice=Indigenous)"
+race_mideast	"Which of these do you identify with? (Choose all that apply)  Note: our surveys are global, so we have chosen very broad categories to cover as many identities as possible, with the option to write in yours specifically.   (choice=Middle Eastern/North African)"
+race_white	"Which of these do you identify with? (Choose all that apply)  Note: our surveys are global, so we have chosen very broad categories to cover as many identities as possible, with the option to write in yours specifically.   (choice=White/Caucasian)"
+race_other	"Which of these do you identify with? (Choose all that apply)  Note: our surveys are global, so we have chosen very broad categories to cover as many identities as possible, with the option to write in yours specifically.   (choice=Other {multiracial_other})"
+race_pnta	"Which of these do you identify with? (Choose all that apply)  Note: our surveys are global, so we have chosen very broad categories to cover as many identities as possible, with the option to write in yours specifically.   (choice=Prefer not to answer)"
+race_other_desc	"If other race, please specify:"
+currency	What currency do you use?
+currency_other_desc	"If your currency, please specify"
+currency_other_desc_manual	/
+coverage	Do you have health coverage that covers the cost of your diabetes medication and supplies?   (Choose the answer the best describes your situation)
+help_no	"Do you receive any help to pay for your insulin, diabetes supplies, or care?   (Choose all that apply) (choice=No)"
+help_famfriends	"Do you receive any help to pay for your insulin, diabetes supplies, or care?   (Choose all that apply) (choice=Yes, support from family and friends)"
+help_charity	"Do you receive any help to pay for your insulin, diabetes supplies, or care?   (Choose all that apply) (choice=Yes, charities/religious/non-profit programs)"
+help_donation	"Do you receive any help to pay for your insulin, diabetes supplies, or care?   (Choose all that apply) (choice=Yes, donations (including online platforms like GoFundMe))"
+help_gov	"Do you receive any help to pay for your insulin, diabetes supplies, or care?   (Choose all that apply) (choice=Yes, government assistance/benefit programs)"
+help_pharma	"Do you receive any help to pay for your insulin, diabetes supplies, or care?   (Choose all that apply) (choice=Yes, pharmaceutical company assistance programs)"
+help_other	"Do you receive any help to pay for your insulin, diabetes supplies, or care?   (Choose all that apply) (choice=Other {help_type_oth})"
+help_pnta	"Do you receive any help to pay for your insulin, diabetes supplies, or care?   (Choose all that apply) (choice=Prefer not to answer)"
+help_other_desc	"If other, please describe"
+payOoPE_none	"In the past year, have you had to do any of the following to pay for your out-of-pocket costs for your medication and/or supplies? (Choose all that apply) (choice=None of these)"
+payOoPE_savings	"In the past year, have you had to do any of the following to pay for your out-of-pocket costs for your medication and/or supplies? (Choose all that apply) (choice=Use savings)"
+payOoPE_borrow	"In the past year, have you had to do any of the following to pay for your out-of-pocket costs for your medication and/or supplies? (Choose all that apply) (choice=Borrowed money)"
+payOoPE_asset	"In the past year, have you had to do any of the following to pay for your out-of-pocket costs for your medication and/or supplies? (Choose all that apply) (choice=Sold assets)"
+payOoPE_other	"In the past year, have you had to do any of the following to pay for your out-of-pocket costs for your medication and/or supplies? (Choose all that apply) (choice=Other {oth_sources_oth})"
+payOoPE_pnta	"In the past year, have you had to do any of the following to pay for your out-of-pocket costs for your medication and/or supplies? (Choose all that apply) (choice=Prefer not to answer)"
+payOoPE_other_desc	"If other, please describe"
+covid_unaffected	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=No change)
+covid_supply	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=Access to supplies have been delayed or disrupted)
+covid_insulin	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=Access to insulin has been delayed or disrupted)
+covid_price_up	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=Prices have gone up)
+covid_price_down	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=Prices have gone down)
+covid_unsure	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=Unsure)
+covid_pnta	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=Prefer not to answer)
+insulin_form_vial	In what form do you get your insulin?   (Choose all that apply) (choice=Insulin vials)
+insulin_form_pen	In what form do you get your insulin?   (Choose all that apply) (choice=Insulin pens)
+insulin_form_inhale	In what form do you get your insulin?   (Choose all that apply) (choice=Inhaled insulin)
+insulin_form_other	In what form do you get your insulin?   (Choose all that apply) (choice=Other {insulin_admin_oth})
+insulin_form_pnta	In what form do you get your insulin?   (Choose all that apply) (choice=Prefer not to answer)
+insulin_form_other_desc	"If other, please specify"
+insulin_intake_syringe	How do you administer the insulin?   (Choose all that apply)  (choice=Syringes)
+insulin_intake_pen	How do you administer the insulin?   (Choose all that apply)  (choice=Pens with pen needles)
+insulin_intake_pump	How do you administer the insulin?   (Choose all that apply)  (choice=Insulin pump)
+insulin_intake_other	How do you administer the insulin?   (Choose all that apply)  (choice=Other {insulin_how_oth})
+insulin_intake_pnta	How do you administer the insulin?   (Choose all that apply)  (choice=Prefer not to answer)
+insulin_intake_other_desc	"If other, please specify"
+cost_pen_syringes_month	How much do you pay in [currency] for a 1 month supply of pen needles and/or syringes?
+insulin_brand_humalogU100	Please select all insulins you currently use.   (Choose all that apply) (choice=Humalog U-100)
+insulin_brand_humalogU200	Please select all insulins you currently use.   (Choose all that apply) (choice=Humalog U-200)
+insulin_brand_novolog_novorapid	Please select all insulins you currently use.   (Choose all that apply) (choice=Novolog/Novorapid)
+insulin_brand_apidra	Please select all insulins you currently use.   (Choose all that apply) (choice=Apidra)
+insulin_brand_admelog	Please select all insulins you currently use.   (Choose all that apply) (choice=Admelog)
+insulin_brand_lyumjev	Please select all insulins you currently use.   (Choose all that apply) (choice=Lyumjev)
+insulin_brand_humulin	Please select all insulins you currently use.   (Choose all that apply) (choice=Humulin)
+insulin_brand_novolin	Please select all insulins you currently use.   (Choose all that apply) (choice=Novolin (Regular))
+insulin_brand_fiasp	Please select all insulins you currently use.   (Choose all that apply) (choice=Fiasp)
+insulin_brand_velosulin	Please select all insulins you currently use.   (Choose all that apply) (choice=Velosulin)
+insulin_brand_lantus_toujeo	Please select all insulins you currently use.   (Choose all that apply) (choice=Lantus/ Toujeo)
+insulin_brand_levemir	Please select all insulins you currently use.   (Choose all that apply) (choice=Levemir)
+insulin_brand_tresibaU100	Please select all insulins you currently use.   (Choose all that apply) (choice=Tresiba U-100)
+insulin_brand_tresibaU200	Please select all insulins you currently use.   (Choose all that apply) (choice=Tresiba U-200)
+insulin_brand_basaglar	Please select all insulins you currently use.   (Choose all that apply) (choice=Basaglar)
+insulin_brand_nph	Please select all insulins you currently use.   (Choose all that apply) (choice=NPH)
+insulin_brand_humulin7030	Please select all insulins you currently use.   (Choose all that apply) (choice=Humulin 70/30)
+insulin_brand_humulin5050	Please select all insulins you currently use.   (Choose all that apply) (choice=Humulin 50/50)
+insulin_brand_humalog7252	Please select all insulins you currently use.   (Choose all that apply) (choice=Humalog 75/25)
+insulin_brand_novolin7030	Please select all insulins you currently use.   (Choose all that apply) (choice=Novolin 70/30)
+insulin_brand_novolog7030	Please select all insulins you currently use.   (Choose all that apply) (choice=Novolog 70/30)
+insulin_brand_mixtard	Please select all insulins you currently use.   (Choose all that apply) (choice=Mixtard)
+insulin_brand_rezvoglar	Please select all insulins you currently use.   (Choose all that apply) (choice=Rezvoglar)
+insulin_brand_afrezza	Please select all insulins you currently use.   (Choose all that apply) (choice=Afrezza)
+insulin_brand_semglee	Please select all insulins you currently use.   (Choose all that apply) (choice=Semglee)
+insulin_brand_other	Please select all insulins you currently use.   (Choose all that apply) (choice=Other {insulin_type_oth})
+insulin_brand_pnta	Please select all insulins you currently use.   (Choose all that apply) (choice=Prefer not to answer)
+insulin_brand_other_desc	"If other, please list"
+shortacting_vials_month	"How many vials of short-acting insulin (e.g. Humalog, Novolog/Novorapid, Apidra, Humulin, Novolin/Regular, Velosulin, Fiasp, Admelog, or Lyumjev) do you typically use per month?"
+shortacting_pens_month	"How many pens of short-acting insulin (e.g. Humalog, Novolog/Novorapid, Apidra, Humulin, Novolin/Regular, Velosulin, Fiasp, Admelog, or Lyumjev) do you typically use per month?"
+cost_shortacting_month	"How much do you pay out of pocket in [currency] for a 1 month supply of short-acting insulin (e.g. Humalog, Novolog/Novorapid, Apidra, Humulin, Novolin/Regular, Velosulin, Fiasp, Admelog, or Lyumjev)?"
+intlongacting_vials_month	"How many vials of intermediate or long-acting insulin (e.g. Lantus/Toujeo, Levemir, Tresiba, Basaglar, NPH, Semglee, or Rezvoglar) do you typically use per month?"
+intlongacting_pens_month	"How many pens of intermediate or long-acting insulin (e.g. Lantus/Toujeo, Levemir, Tresiba, Basaglar, NPH, Semglee, or Rezvoglar) do you typically use per month?"
+cost_intlongacting_month	"How much do you pay out of pocket in [currency] for a 1 month supply of intermediate or long-acting insulin (e.g. Lantus/Toujeo, Levemir, Tresiba, Basaglar, NPH, Semglee, or Rezvoglar)?"
+mixed_vials_month	"How many vials of mixed insulin (e.g. Humulin 70/30, Humulin 50/50, Humalog 75/25, Novolin 70/30, Mixtard or Novolog 70/30) do you typically use per month?"
+mixed_pens_month	"How many pens of mixed insulin (e.g. Humulin 70/30, Humulin 50/50, Humalog 75/25, Novolin 70/30, Mixtard or Novolog 70/30) do you typically use per month?"
+cost_mixed_month	"How much do you pay out of pocket in [currency] for a 1 month supply of mixed insulin (e.g. Humulin 70/30, Humulin 50/50, Humalog 75/25, Novolin 70/30, Mixtard or Novolog 70/30)?"
+otheracting_vials_month	How many vials of other insulin type do you typically use per month?
+otheracting_pens_month	How many pens of other insulin type do you typically use per month?
+cost_otheracting_month	How much do you pay out of pocket in [currency] for a 1 month supply of other insulin type?
+ration_insulin	How often do you have to ration or NOT give yourself insulin due to cost? 
+pump_type	What type of insulin pump do you use? 
+pump_type_other	"If other, pump type please list"
+cost_pump_unit	How much did you pay out of pocket in [currency] for your [pump_type] pump?
+cost_pumpsupplies_month	How much do you pay out of pocket in [currency] for a 1 month supply of insulin pump supplies?
+strip_brand	What brand of blood testing strips do you primarily use? 
+strip_brand_other_desc	"If other, please list"
+strip_nb_month	Approximately how many test strips do you use per month?
+cost_strip_month	How much do you pay out of pocket in [currency] for a 1 month supply of blood glucose testing strips?
+cgm	Do you use a continuous glucose monitor/Flash Glucose Monitoring devices (CGM)? 
+cgm_other	"If other, please list"
+cost_cgm_month	How much do you pay out of pocket in [currency] for a 1 month supply of CGM/Flash Glucose Monitoring supplies?
+ration_test	How often do you NOT test your blood sugar due to lack of strips or CGM supplies?
+glucagon	Do you use or keep a glucagon emergency injection or nasal spray (Baqsimi) for hypoglycemia (low blood sugar)?
+glucagon_no_expensive	You answered that you do not use or keep a glucagon or nasal spray with you. Why not?   (Choose all that apply) (choice=It is too expensive)
+glucagon_no_available	You answered that you do not use or keep a glucagon or nasal spray with you. Why not?   (Choose all that apply) (choice=It is not available where I live)
+glucagon_no_exist	You answered that you do not use or keep a glucagon or nasal spray with you. Why not?   (Choose all that apply) (choice=I did not know it exists)
+glucagon_no_use	You answered that you do not use or keep a glucagon or nasal spray with you. Why not?   (Choose all that apply) (choice=I do not know how to use it)
+glucagon_no_keep	You answered that you do not use or keep a glucagon or nasal spray with you. Why not?   (Choose all that apply) (choice=I do not want to keep it with me)
+glucagon_no_need	You answered that you do not use or keep a glucagon or nasal spray with you. Why not?   (Choose all that apply) (choice=I do not feel that I need it)
+glucagon_no_other	You answered that you do not use or keep a glucagon or nasal spray with you. Why not?   (Choose all that apply) (choice=Other {glucagon_no_oth})
+glucagon_no_pnta	You answered that you do not use or keep a glucagon or nasal spray with you. Why not?   (Choose all that apply) (choice=Prefer not to answer)
+glucagon_no_other_desc	"If other, please list"
+cost_glucagon_shot	How much do you pay out of pocket in [currency] for a glucagon emergency shot or nasal spray?
+ketstrip	Do you use or keep ketone strips with you?
+ketstrip_no_expensive	You answered that you do not use or keep ketone strips with you. Why not?   (Choose all that apply) (choice=It is too expensive)
+ketstrip_no_available	You answered that you do not use or keep ketone strips with you. Why not?   (Choose all that apply) (choice=It is not available where I live)
+ketstrip_no_exist	You answered that you do not use or keep ketone strips with you. Why not?   (Choose all that apply) (choice=I did not know it exists)
+ketstrip_no_use	You answered that you do not use or keep ketone strips with you. Why not?   (Choose all that apply) (choice=I do not know how to use it)
+ketstrip_no_keep	You answered that you do not use or keep ketone strips with you. Why not?   (Choose all that apply) (choice=I do not want to keep it with me)
+ketstrip_no_need	You answered that you do not use or keep ketone strips with you. Why not?   (Choose all that apply) (choice=I do not feel that I need it)
+ketstrip_no_other	You answered that you do not use or keep ketone strips with you. Why not?   (Choose all that apply) (choice=Other {ketone_strips_no_oth})
+ketstrip_no_pnta	You answered that you do not use or keep ketone strips with you. Why not?   (Choose all that apply) (choice=Prefer not to answer)
+ketstrip_no_other_desc	"If other, please describe"
+cost_ketstrip_container	How much do you pay out of pocket in [currency] for one container of ketone test strips?  
+cost_OoPE_total_month	"The number below is the total sum in [currency] of all monthly out-of-pocket costs you've entered related to your diabetes supplies.    If it seems higher or lower than you expected, please recheck the values you have entered above."
+cost_doctor_year	"How much do you pay in [currency] annually for medical/doctor visits related to diabetes? This may be in the form of a 'copay,' if you have health coverage. "
+cost_premium_month	How much do you pay in [currency] per month for your health coverage? You might know this as a 'premium.'
+cost_household_month	"If comfortable, please share your total average monthly household expenses other than diabetes costs (i.e. rent/mortgage, utilities, food, leisure activities, clothing, etc)."
+misc_info	Is there any other information you would like us to know about your diabetes care? 
+misc_gov	"If you could tell your government or people in power one thing, what would you tell them?"
+complete	Complete?
