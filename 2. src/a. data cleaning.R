@@ -19,7 +19,7 @@ library(scales)
 
 # SETUP ------------------------------------------------------------------------
 # working directory
-setwd('~/Dropbox/T1International_2022')
+setwd('~/Dropbox/T1International-OoPE-survey-2022')
 # display sanity checks
 SANITY_CHECK=F
 # plots
@@ -413,7 +413,6 @@ if(PLOT) {
          labs(title='Rationing of insulin', x='Frequency', y='Nb. of respondents')
   }
 
-
 # n. frequency of rationing BG testing
 data %<>% mutate('ration_test'=case_when(ration_test == 'At least once per month' ~ 'monthly',
                                          ration_test == 'At least once per week' ~ 'weekly',
@@ -536,7 +535,9 @@ if(PLOT) {
 }
 
 # r. plot all costs
-data %>%
+if(PLOT) {
+
+  data %>%
   select(id, starts_with('usd_')) %>%
   melt(id.vars='id', variable.name='cost', value.name='USD') %>%
   mutate('cost'=str_remove(cost, 'usd_')) %>%
@@ -551,6 +552,8 @@ data %>%
               x='USD, log-scale',
               caption='0 USD are not shown')
 
+  }
+
 
 
 # 5. INCOMPLETE RECORDS --------------------------------------------------------
@@ -558,17 +561,25 @@ data %>%
 data %>% count(complete)
 
 # b. heatmap of missing answers for (tentative list of) important fields
-data %>%
-  filter(complete=='Incomplete') %>%
-  select(id, T1con, country_alpha2, coverage, starts_with('ration_'), covid_unaffected,
-         starts_with('usd_')) %>%
-  column_to_rownames('id') %>%
-  is.na() %>%
-  multiply_by(1) %>%
-  pheatmap::pheatmap(cellwidth=15, cellheight=15, cutree_rows=2, main='Incomplete records',
-                     show_rownames=T, cluster_cols=F, clustering_method='ward.D2',
-                     legend_breaks=c(0, 1), color=c('lightblue', 'red'), gaps_col=c(3, 5, 6, 18))
+if(PLOT) {
+  data %>%
+    filter(complete=='Incomplete') %>%
+    select(id, T1con, country_alpha2, coverage, starts_with('ration_'), covid_unaffected,
+           starts_with('usd_')) %>%
+    column_to_rownames('id') %>%
+    is.na() %>%
+    multiply_by(1) %>%
+    pheatmap::pheatmap(cellwidth=15, cellheight=15, cutree_rows=2, main='Incomplete records',
+                       show_rownames=T, cluster_cols=F, clustering_method='ward.D2',
+                       legend_breaks=c(0, 1), color=c('lightblue', 'red'), gaps_col=c(3, 5, 6, 18))
+
+  }
 
 
 
+# 6. EXPORT CLEAN DATA --------------------------------------------------------
+# a. RDS format
+saveRDS(data, '1. data/c. clean/cleaned_data.rds')
 
+# b. TSV format
+write_tsv(data, '1. data/c. clean/cleaned_data.tsv', col_names=T)
