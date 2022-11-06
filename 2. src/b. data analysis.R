@@ -47,37 +47,153 @@ top7 <- country_summary %>%
         pull(country_alpha2)
 
 # b. responses by country (with selection for countries > 25 responses)
-  # version 1 - colors indicate kept countries (top7)
-  country_summary %>%
-    unite('country_name', c('country_name', 'country_alpha2'), sep=' - ') %>%
-    mutate('country_name'=country_name %>% fct_reorder(n)) %>%
-    ggplot(aes(x=country_name, y=n, fill=top7)) +
-           geom_col(lwd=.3, col='black') +
-           geom_text(aes(label=n), hjust=-.3) +
-           coord_flip() + theme(legend.position='none', aspect.ratio=1) +
-           scale_fill_brewer(palette='Dark2', direction=-1) +
-           scale_y_continuous(expand=c(0.01, 0, 0.1, 0)) +
-           labs(title='Responses by country',
-                x=paste0('Country (N=', n_distinct(data$country_alpha2),')'),
-                y=paste0('Number of responses (N=', format(nrow(data), big.mark=','), ')'))
+df_1b <- country_summary %>%
+         unite('country_name', c('country_name', 'country_alpha2'), sep=' - ') %>%
+         mutate('country_name'=country_name %>% fct_reorder(n))
 
-  # version 2 - colors indicate country income level and background rectangle for kept countries (top7)
-  country_income_levels_colors <- brewer.pal(n=3, name='Dark2')[c(2, 3, 1)]
-
-  country_summary %>%
-    unite('country_name', c('country_name', 'country_alpha2'), sep=' - ') %>%
-    mutate('country_name'=country_name %>% fct_reorder(n)) %>%
-    ggplot(aes(x=country_name, y=n, fill=country_income_class)) +
-           annotate(geom='rect', xmin=Inf, xmax=14.5, ymin=-Inf, ymax=Inf, fill='lightgreen', alpha=.5) +
-           annotate(geom='rect', xmin=-Inf, xmax=14.5, ymin=-Inf, ymax=Inf, fill='grey', alpha=.5) +
-           geom_col(lwd=.3, col='black') +
-           geom_text(aes(label=n), hjust=-.3) +
-           coord_flip() +
-           cowplot::theme_cowplot() + theme(legend.position='bottom', aspect.ratio=1) +
-           scale_fill_manual(values=country_income_levels_colors, name='Income level') +
-           scale_y_continuous(expand=c(0.01, 0, 0.1, 0)) +
-           labs(title='Responses by country',
-                x=paste0('Country (N=', n_distinct(data$country_alpha2),')'),
-                y=paste0('Number of responses (N=', format(nrow(data), big.mark=','), ')'))
+ggplot(df_1b, aes(x=country_name, y=n, fill=top7)) +
+       geom_col(lwd=.3, col='black') +
+       geom_text(aes(label=n, col=country_income_class), hjust=-.3, fontface='bold') +
+       coord_flip() + cowplot::theme_cowplot() +
+       theme(legend.position=c(.7, .25), aspect.ratio=1) +
+       scale_fill_brewer(palette='Dark2', direction=-1, name='Selected') +
+       scale_color_manual(values=c('brown3', 'black', 'deepskyblue3'), name='Income class') +
+       scale_y_continuous(expand=c(0.01, 0, 0.15, 0)) +
+       labs(title='Responses by country',
+            x=paste0('Country (N=', n_distinct(data$country_alpha2),')'),
+            y=paste0('Number of responses (N=', format(nrow(data), big.mark=','), ')'))
 
 # c. country healthcare coverage (top7)
+healthcare_coverage_colors <- rev(brewer.pal(n=3, name='Set1'))
+
+data %>%
+  filter(country_alpha2 %in% top7, coverage != 'pnta') %>%
+  group_by(country_alpha2, coverage) %>%
+  summarize('n'=n()) %>%
+  mutate('country_alpha2'=factor(country_alpha2, levels=c('SE', 'GB', 'DE', 'CA', 'US', 'PA', 'IN')),
+         'coverage'=factor(coverage, levels=rev(c('none', 'partial', 'full')))) %>%
+  group_by(country_alpha2) %>%
+  mutate('total'=sum(n),
+         'prop'=n/total*100) %>%
+  ggplot(aes(x=country_alpha2, y=prop, fill=coverage)) +
+         geom_col(lwd=.3, col='black', alpha=.8) +
+         geom_text(aes(label=n, y=prop), position=position_stack(vjust=.5), col='white') +
+         scale_fill_manual(values=healthcare_coverage_colors, name='Healthcare\ncoverage') +
+         scale_y_continuous(expand=c(0, 0.01)) +
+         cowplot::theme_cowplot() + theme(aspect.ratio=2) +
+         labs(title='Healthcare coverage in top 7 countries',
+              x='Top 7 most represented countries',
+              y='% of responses')
+
+# d. make data subset for Top 7 countries only
+data_top7 <- data %>% filter(country_alpha2 %in% top7)
+
+
+
+# 3. OUT-OF-POCKET EXPENSES ----------------------------------------------------
+# a. function to compute sum of OoPEs by category
+category_sum <- function(df, cols) {
+                                    df %<>% select(all_of(cols))
+                                    n_NA <- df %>% is.na() %>% rowSums()
+                                    result <- ifelse(n_NA == length(cols), NA, rowSums(df, na.rm=T))
+                                    return(result)
+                                   }
+
+test <- data %>%
+        filter(country_alpha2=='IN', coverage=='none') %>%
+        rowwise() %>%
+        mutate('devices'=sum(usd_pumpsupplies_month, usd_cgm_month, na.rm=T)) %>%
+        select(id, 'a2'=country_alpha2, 'cov'=coverage, 'usd_pumpsupplies'=usd_pumpsupplies_month, 'usd_cgm'=usd_cgm_month, devices) %>%
+        as_tibble()
+
+test$new <- category_sum(df=test, cols=c('usd_pumpsupplies', 'usd_cgm'))
+
+data_top7 %>%
+  select(id, matches('insulin_intake'), usd_pump_unit, usd_pumpsupplies_month, pump_type, pump_type_other) %>%
+  filter(!insulin_intake_pump, !is.na(usd_pump_unit))
+
+
+# a. compute sum of costs by categories (columns starts with 'usd_sum_')
+data_top7 %<>%
+  rowwise() %>%
+  mutate('usd_sum_devices'=sum(usd_pumpsupplies_month, usd_cgm_month, na.rm=T),
+         'usd_sum_insulins'=sum(usd_shortacting_month, usd_intlongacting_month, usd_mixed_month, usd_otheracting_month, na.rm=T),
+         'usd_sum_glucagon'=usd_glucagon_shot,
+         'usd_sum_pen_needles'=usd_pen_syringes_month,
+         'usd_sum_strips'=sum(usd_strip_month, na.rm=T))
+
+# b. plot OoPEs per expense category
+data_top7 %>%
+  select(id, starts_with('usd_sum_')) %>%
+  melt(id.vars='id', variable.name='category', value.name='USD') %>%
+  mutate('category'=case_when(category == 'usd_sum_devices' ~ 'pump & CGM',
+                              category == 'usd_sum_insulins' ~ 'insulin',
+                              category == 'usd_sum_pen_needles' ~ 'pen & needles',
+                              category == 'usd_sum_glucagon' ~ 'glucagon',
+                              category == 'usd_sum_strips' ~ 'test strips') %>%
+                    factor(levels=c('test strips', 'glucagon', 'pen & needles', 'insulin', 'pump & CGM'))) %>%
+  ggplot(aes(x=category, y=USD+1, fill=category)) +
+         geom_violin(draw_quantiles=c(.25, .5, .75), trim=T, scale='count') +
+         scale_y_log10(expand=c(0, 0.05, 0, 0)) +
+         scale_fill_brewer(palette='Set2', direction=-1) +
+         coord_flip() + cowplot::theme_cowplot() +
+         theme(legend.position='none', aspect.ratio=.4) +
+         labs(y='OoPEs (monthly USD+1, log-scale)', x='', title='per expense category')
+
+# c. per healthcare coverage
+data_top7 %>%
+  select(coverage, starts_with('usd_sum_')) %>%
+  filter(coverage != 'pnta') %>%
+  rowwise() %>%
+  mutate('sum'=sum(usd_sum_devices, usd_sum_insulins, usd_sum_glucagon, usd_sum_pen_needles, usd_sum_strips, na.rm=T)) %>%
+  ggplot(aes(x=sum+1, col=coverage)) +
+         geom_density(lwd=1) +
+         scale_x_log10(expand=c(0, 0.05, 0, 0)) +
+         scale_color_brewer(palette='Set1') +
+         cowplot::theme_cowplot() +
+         theme(aspect.ratio=.3) +
+         labs(title='per healthcare coverage', x='OoPEs (monthly USD+1, log-scale)')
+
+# d. per country
+data_top7 %>%
+  rowwise() %>%
+  mutate('sum'=sum(usd_sum_devices, usd_sum_insulins, usd_sum_glucagon, usd_sum_pen_needles, usd_sum_strips, na.rm=T)) %>%
+  select(country_alpha2, sum) %>%
+  ggplot(aes(x=sum+1, col=country_alpha2)) +
+         geom_density(lwd=1) +
+         scale_x_log10(expand=c(0, 0.05, 0, 0)) +
+         scale_color_brewer(palette='Paired', name='', direction=-1) +
+         cowplot::theme_cowplot() + theme(aspect.ratio=.4) +
+         labs(title='per country', x='OoPEs (monthly USD+1, log-scale)')
+
+# e. breakdown
+
+# TODO: rowwise sum cannot be 0 if all items are NA within a category!!!!
+# see example:
+data %>%
+  filter(country_alpha2=='IN') %>%
+  filter(coverage=='none') %>%
+  rowwise() %>%
+  mutate('devices'=sum(usd_pumpsupplies_month, usd_cgm_month, na.rm=T)) %>%
+  select(id, country_alpha2, coverage, usd_pumpsupplies_month, usd_cgm_month, devices, cgm_yesno) %>%
+  filter(devices < 10) %>%
+  View()
+
+
+
+data_top7 %>%
+  filter(coverage != 'pnta') %>%
+  select(country_alpha2, coverage,
+         usd_sum_devices, usd_sum_insulins, usd_sum_glucagon, usd_sum_pen_needles, usd_sum_strips) %>%
+  melt(id.vars=c('country_alpha2', 'coverage'), variable.name='category', value.name='USD') %>%
+  mutate('category'=category %>% str_remove('usd_sum_'),
+         'country_alpha2'=factor(country_alpha2, levels=c('SE', 'GB', 'DE', 'CA', 'IN', 'US', 'PA'))) %>%
+  ggplot(aes(x=USD+1, fill=coverage)) +
+         geom_histogram(lwd=.3, col='black', position=position_stack(), binwidth=.2) +
+         scale_x_log10() +
+         facet_grid(country_alpha2 ~ category, scales='free_y') +
+         cowplot::theme_cowplot() + theme(aspect.ratio=.7, legend.position='bottom') +
+         scale_fill_brewer(palette='Set1') +
+         labs(title='OoPE breakdown',
+              x='OoPEs (monthly USD+1, log-scale)',
+              y='Number of responses')
