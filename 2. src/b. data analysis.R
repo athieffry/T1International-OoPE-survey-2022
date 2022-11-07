@@ -94,8 +94,8 @@ data_top7 <- data %>% filter(country_alpha2 %in% top7)
 # a. function to compute sum of OoPEs by category
 category_sum <- function(df, cols) {
                                     df %<>% select(all_of(cols))
-                                    n_NA <- df %>% is.na() %>% rowSums()
-                                    result <- ifelse(n_NA == length(cols), NA, rowSums(df, na.rm=T))
+                                    nb_NA <- df %>% is.na() %>% rowSums()
+                                    result <- ifelse(nb_NA == length(cols), NA, rowSums(df, na.rm=T))
                                     return(result)
                                    }
 

@@ -544,6 +544,7 @@ if(PLOT) {
   na.omit() %>%
   ggplot(aes(x=USD, col=cost)) +
          geom_density() +
+         geom_rug(col='black') +
          facet_wrap(~cost, scales='free') +
          scale_x_log10(labels=comma_format(accuracy=1)) +
          theme(legend.position='none') +
@@ -553,6 +554,27 @@ if(PLOT) {
               caption='0 USD are not shown')
 
   }
+
+# s. clean-up OoPEs: set costs to NA if no required field was checked
+  # ID 807 & 903, not for BG strips, CGM, glucagon, ketone strips: all those are ok
+  # Pen & needles
+  data %<>% mutate('usd_pen_syringes_month'=ifelse(!insulin_intake_syringe & !insulin_intake_pen & !is.na(usd_pen_syringes_month), NA, usd_pen_syringes_month))
+
+  # Pump
+  data %<>% mutate('usd_pump_unit'=ifelse(!insulin_intake_pump, NA, usd_pump_unit),
+                   'usd_pumpsupplies_month'=ifelse(!insulin_intake_pump, NA, usd_pumpsupplies_month))
+
+# t. re-calculate total OoPEs
+data$usd_OoPE_total_month <- data %>%
+                             select(usd_shortacting_month,
+                                    usd_intlongacting_month,
+                                    usd_mixed_month,
+                                    usd_otheracting_month,
+                                    usd_pumpsupplies_month,
+                                    usd_strip_month,
+                                    usd_cgm_month,
+                                    usd_pen_syringes_month) %>%
+                             rowSums(na.rm=T)
 
 
 
