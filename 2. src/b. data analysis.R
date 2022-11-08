@@ -184,17 +184,17 @@ if(PLOT) {
 
 
 # 4. COVID-19 IMPACT -----------------------------------------------------------
-# a.
+# a. Impact overview (yes/no)
 if(PLOT) {
   data_top7 %>%
     group_by(country_alpha2) %>%
-    count(covid_unaffected) %>%
+    count(covid_impact_yesno) %>%
     group_by(country_alpha2) %>%
     mutate('total'=sum(n),
            'pc'=n/total*100,
-           'covid_unaffected'=ifelse(covid_unaffected, 'Yes', 'No') %>% factor(levels=c('Yes', 'No')),
-           'alpha2'=country_alpha2 %>% factor(levels=c('SE', 'GB', 'DE', 'CA', 'IN', 'US', 'PA'))) %>%
-    ggplot(aes(x=alpha2, y=pc, fill=covid_unaffected)) +
+           'covid_impact_yesno'=ifelse(covid_impact_yesno, 'Affected', 'Unaffected') %>% factor(levels=c('Unaffected', 'Affected')),
+           'country_alpha2'=country_alpha2 %>% factor(levels=c('SE', 'GB', 'DE', 'CA', 'IN', 'US', 'PA'))) %>%
+    ggplot(aes(x=country_alpha2, y=pc, fill=covid_impact_yesno)) +
            geom_col(lwd=.3, col='black', alpha=.55) +
            geom_hline(yintercept=50, lty=2) +
            geom_text(aes(label=n), position=position_stack(vjust=.5)) +
@@ -204,5 +204,33 @@ if(PLOT) {
            labs(title='Overview of COVID-19 impact', x='Top 7 represented countries', y='% of responses')
   }
 
-data_top7 %>%
-  select(matches('covid'))
+# b. Impact heatmap details (yes)
+  # make matrix of "yes" percentage per country
+  covid_yes_df <- data_top7 %>%
+                  filter(covid_impact_yesno) %>%
+                  select(country_alpha2, matches('covid_impact_') &! 'covid_impact_yesno') %>%
+                  melt(id.vars='country_alpha2', variable.name='category', value.name='impacted') %>%
+                  mutate('category'=category %>% str_remove('covid_impact_')) %>%
+                  filter(impacted) %>%
+                  count(country_alpha2, category) %>%
+                  group_by(country_alpha2) %>%
+                  mutate('total'=sum(n)) %>%
+                  ungroup() %>%
+                  mutate('pc'=n/total*100)
+
+  # covid_mat_pc <- covid_yes_df %>%
+  #                 select(-n, -total) %>%
+  #                 pivot_wider(names_from='category', values_from='pc') %>%
+  #                 replace_na(list('price_up'=0, 'pnta'=0, 'price_down'=0)) %>%
+  #                 column_to_rownames('country_alpha2')
+
+  covid_mat_n <- covid_yes_df %>%
+                 select(-pc, -total) %>%
+                 pivot_wider(names_from='category', values_from='n') %>%
+                 replace_na(list('price_up'=0, 'pnta'=0, 'price_down'=0)) %>%
+                 column_to_rownames('country_alpha2')
+
+
+  pheatmap::pheatmap(covid_mat_n, cellwidth=30, cellheight=30, display_numbers=covid_mat_n,
+                     cutree_rows=3, cutree_cols=3, main='COVID-19 impact details', scale='row')
+
