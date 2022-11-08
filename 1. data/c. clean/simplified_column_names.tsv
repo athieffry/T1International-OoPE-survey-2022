@@ -38,13 +38,13 @@ payOoPE_asset	"In the past year, have you had to do any of the following to pay 
 payOoPE_other	"In the past year, have you had to do any of the following to pay for your out-of-pocket costs for your medication and/or supplies? (Choose all that apply) (choice=Other {oth_sources_oth})"
 payOoPE_pnta	"In the past year, have you had to do any of the following to pay for your out-of-pocket costs for your medication and/or supplies? (Choose all that apply) (choice=Prefer not to answer)"
 payOoPE_other_desc	"If other, please describe"
-covid_unaffected	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=No change)
-covid_supply	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=Access to supplies have been delayed or disrupted)
-covid_insulin	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=Access to insulin has been delayed or disrupted)
-covid_price_up	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=Prices have gone up)
-covid_price_down	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=Prices have gone down)
-covid_unsure	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=Unsure)
-covid_pnta	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=Prefer not to answer)
+covid_impact_yesno	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=No change)
+covid_impact_supply	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=Access to supplies have been delayed or disrupted)
+covid_impact_insulin	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=Access to insulin has been delayed or disrupted)
+covid_impact_price_up	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=Prices have gone up)
+covid_impact_price_down	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=Prices have gone down)
+covid_impact_unsure	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=Unsure)
+covid_impact_pnta	Has the COVID-19 pandemic affected your access to insulin and diabetes supplies? (choice=Prefer not to answer)
 insulin_form_vial	In what form do you get your insulin?   (Choose all that apply) (choice=Insulin vials)
 insulin_form_pen	In what form do you get your insulin?   (Choose all that apply) (choice=Insulin pens)
 insulin_form_inhale	In what form do you get your insulin?   (Choose all that apply) (choice=Inhaled insulin)

@@ -304,22 +304,24 @@ if(PLOT) {
   }
 
 # h. COVID-19 impact
-data %<>% mutate(across(starts_with('covid_'), \(x) ifelse(x=='Checked', T, F)))
+data %<>% mutate(across(starts_with('covid_impact_'), \(x) ifelse(x=='Checked', T, F)))
+# invert "covid_impact_yesno" as survey question is formulated as the negative
+data %<>% mutate('covid_impact_yesno'=!covid_impact_yesno)
 
 if(PLOT) {
   data %>%
-    select(starts_with('covid_')) %>%
+    select(starts_with('covid_impact_')) %>%
     multiply_by(1) %>%
-    set_colnames(colnames(.) %>% str_remove('covid_')) %>%
-    pheatmap::pheatmap(show_rownames=F, color=c('navy', 'red'), cellwidth=15,
-                       treeheight_row=20, treeheight_col=40,
+    set_colnames(colnames(.) %>% str_remove('covid_impact_')) %>%
+    pheatmap::pheatmap(show_rownames=F, color=c('navy', 'red'), cluster_cols=F,
+                       treeheight_row=20, treeheight_col=40, cellwidth=15,
                        breaks=c(-1, 0, 1), legend_breaks=c(-.5, .5), legend_labels=c('FALSE' ,'TRUE'),
                        clustering_method='ward.D2', clustering_distance_rows='binary', main='COVID impact')
 
   data %>%
-    select(starts_with('covid_')) %>%
+    select(starts_with('covid_impact_') &! 'covid_impact_yesno') %>%
     multiply_by(1) %>%
-    set_colnames(colnames(.) %>% str_remove('covid_')) %>%
+    set_colnames(colnames(.) %>% str_remove('covid_impact_')) %>%
     eulerr::euler(shape='ellipse') %>% plot(quantities=T, main='COVID impact')
   }
 
