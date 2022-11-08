@@ -91,7 +91,8 @@ data_top7 <- data %>% filter(country_alpha2 %in% top7)
 
 
 # 3. OUT-OF-POCKET EXPENSES ----------------------------------------------------
-# a. function to compute sum of OoPEs by category
+# a. custom function: compute sum of OoPEs by category
+# necessary as sum of empty vector returns 0, and not NA!
 category_sum <- function(df, cols) {
                                     df %<>% select(all_of(cols))
                                     nb_NA <- df %>% is.na() %>% rowSums()
@@ -99,28 +100,13 @@ category_sum <- function(df, cols) {
                                     return(result)
                                    }
 
-test <- data %>%
-        filter(country_alpha2=='IN', coverage=='none') %>%
-        rowwise() %>%
-        mutate('devices'=sum(usd_pumpsupplies_month, usd_cgm_month, na.rm=T)) %>%
-        select(id, 'a2'=country_alpha2, 'cov'=coverage, 'usd_pumpsupplies'=usd_pumpsupplies_month, 'usd_cgm'=usd_cgm_month, devices) %>%
-        as_tibble()
-
-test$new <- category_sum(df=test, cols=c('usd_pumpsupplies', 'usd_cgm'))
-
-data_top7 %>%
-  select(id, matches('insulin_intake'), usd_pump_unit, usd_pumpsupplies_month, pump_type, pump_type_other) %>%
-  filter(!insulin_intake_pump, !is.na(usd_pump_unit))
-
-
-# a. compute sum of costs by categories (columns starts with 'usd_sum_')
+# b. compute sum of costs by categories (columns starts with 'usd_sum_')
 data_top7 %<>%
-  rowwise() %>%
-  mutate('usd_sum_devices'=sum(usd_pumpsupplies_month, usd_cgm_month, na.rm=T),
-         'usd_sum_insulins'=sum(usd_shortacting_month, usd_intlongacting_month, usd_mixed_month, usd_otheracting_month, na.rm=T),
+  mutate('usd_sum_devices'=category_sum(df=., cols=c('usd_pumpsupplies_month', 'usd_cgm_month')),
+         'usd_sum_insulins'=category_sum(df=., cols=c('usd_shortacting_month', 'usd_intlongacting_month', 'usd_mixed_month', 'usd_otheracting_month')),
          'usd_sum_glucagon'=usd_glucagon_shot,
          'usd_sum_pen_needles'=usd_pen_syringes_month,
-         'usd_sum_strips'=sum(usd_strip_month, na.rm=T))
+         'usd_sum_strips'=usd_strip_month)
 
 # b. plot OoPEs per expense category
 data_top7 %>%
@@ -144,9 +130,9 @@ data_top7 %>%
 data_top7 %>%
   select(coverage, starts_with('usd_sum_')) %>%
   filter(coverage != 'pnta') %>%
-  rowwise() %>%
-  mutate('sum'=sum(usd_sum_devices, usd_sum_insulins, usd_sum_glucagon, usd_sum_pen_needles, usd_sum_strips, na.rm=T)) %>%
-  ggplot(aes(x=sum+1, col=coverage)) +
+  mutate('total_sum'=category_sum(df=., cols=c('usd_sum_devices', 'usd_sum_insulins', 'usd_sum_glucagon',
+                                               'usd_sum_pen_needles', 'usd_sum_strips'))) %>%
+  ggplot(aes(x=total_sum+1, col=coverage)) +
          geom_density(lwd=1) +
          scale_x_log10(expand=c(0, 0.05, 0, 0)) +
          scale_color_brewer(palette='Set1') +
@@ -156,10 +142,10 @@ data_top7 %>%
 
 # d. per country
 data_top7 %>%
-  rowwise() %>%
-  mutate('sum'=sum(usd_sum_devices, usd_sum_insulins, usd_sum_glucagon, usd_sum_pen_needles, usd_sum_strips, na.rm=T)) %>%
-  select(country_alpha2, sum) %>%
-  ggplot(aes(x=sum+1, col=country_alpha2)) +
+  mutate('total_sum'=category_sum(df=., cols=c('usd_sum_devices', 'usd_sum_insulins', 'usd_sum_glucagon',
+                                               'usd_sum_pen_needles', 'usd_sum_strips'))) %>%
+  select(country_alpha2, total_sum) %>%
+  ggplot(aes(x=total_sum+1, col=country_alpha2)) +
          geom_density(lwd=1) +
          scale_x_log10(expand=c(0, 0.05, 0, 0)) +
          scale_color_brewer(palette='Paired', name='', direction=-1) +
@@ -167,20 +153,6 @@ data_top7 %>%
          labs(title='per country', x='OoPEs (monthly USD+1, log-scale)')
 
 # e. breakdown
-
-# TODO: rowwise sum cannot be 0 if all items are NA within a category!!!!
-# see example:
-data %>%
-  filter(country_alpha2=='IN') %>%
-  filter(coverage=='none') %>%
-  rowwise() %>%
-  mutate('devices'=sum(usd_pumpsupplies_month, usd_cgm_month, na.rm=T)) %>%
-  select(id, country_alpha2, coverage, usd_pumpsupplies_month, usd_cgm_month, devices, cgm_yesno) %>%
-  filter(devices < 10) %>%
-  View()
-
-
-
 data_top7 %>%
   filter(coverage != 'pnta') %>%
   select(country_alpha2, coverage,
@@ -192,7 +164,7 @@ data_top7 %>%
          geom_histogram(lwd=.3, col='black', position=position_stack(), binwidth=.2) +
          scale_x_log10() +
          facet_grid(country_alpha2 ~ category, scales='free_y') +
-         cowplot::theme_cowplot() + theme(aspect.ratio=.7, legend.position='bottom') +
+         cowplot::theme_cowplot() + theme(aspect.ratio=.5, legend.position='bottom') +
          scale_fill_brewer(palette='Set1') +
          labs(title='OoPE breakdown',
               x='OoPEs (monthly USD+1, log-scale)',
