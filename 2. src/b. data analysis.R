@@ -205,32 +205,80 @@ if(PLOT) {
   }
 
 # b. Impact heatmap details (yes)
-  # make matrix of "yes" percentage per country
-  covid_yes_df <- data_top7 %>%
-                  filter(covid_impact_yesno) %>%
-                  select(country_alpha2, matches('covid_impact_') &! 'covid_impact_yesno') %>%
-                  melt(id.vars='country_alpha2', variable.name='category', value.name='impacted') %>%
-                  mutate('category'=category %>% str_remove('covid_impact_')) %>%
-                  filter(impacted) %>%
-                  count(country_alpha2, category) %>%
-                  group_by(country_alpha2) %>%
-                  mutate('total'=sum(n)) %>%
-                  ungroup() %>%
-                  mutate('pc'=n/total*100)
+covid_yes_df <- data_top7 %>%
+                filter(covid_impact_yesno) %>%
+                select(country_alpha2, matches('covid_impact_') &! 'covid_impact_yesno') %>%
+                melt(id.vars='country_alpha2', variable.name='category', value.name='impacted') %>%
+                mutate('category'=category %>% str_remove('covid_impact_')) %>%
+                filter(impacted) %>%
+                count(country_alpha2, category) %>%
+                group_by(country_alpha2) %>%
+                mutate('total'=sum(n)) %>%
+                ungroup() %>%
+                mutate('pc'=n/total*100)
 
-  # covid_mat_pc <- covid_yes_df %>%
-  #                 select(-n, -total) %>%
-  #                 pivot_wider(names_from='category', values_from='pc') %>%
-  #                 replace_na(list('price_up'=0, 'pnta'=0, 'price_down'=0)) %>%
-  #                 column_to_rownames('country_alpha2')
+covid_mat_n <- covid_yes_df %>%
+               select(-pc, -total) %>%
+               pivot_wider(names_from='category', values_from='n') %>%
+               replace_na(list('price_up'=0, 'pnta'=0, 'price_down'=0)) %>%
+               column_to_rownames('country_alpha2')
 
-  covid_mat_n <- covid_yes_df %>%
-                 select(-pc, -total) %>%
-                 pivot_wider(names_from='category', values_from='n') %>%
-                 replace_na(list('price_up'=0, 'pnta'=0, 'price_down'=0)) %>%
-                 column_to_rownames('country_alpha2')
-
-
+if(PLOT) {
   pheatmap::pheatmap(covid_mat_n, cellwidth=30, cellheight=30, display_numbers=covid_mat_n,
                      cutree_rows=3, cutree_cols=3, main='COVID-19 impact details', scale='row')
+  }
 
+
+
+# 5. RATIONING -----------------------------------------------------------------
+# a. worldwide rationing per healthcare coverage type
+data %>%
+  select(coverage, matches('ration_')) %>%
+  melt(id.vars='coverage', variable.name='type', value.name='freq') %>%
+  mutate('type'=case_when(type=='ration_insulin' ~ 'Ration or\nskip insulin',
+                          type=='ration_test' ~ 'Not testing\nblood glucose',)) %>%
+  group_by_all() %>%
+  summarize('n'=n()) %>%
+  group_by(coverage) %>%
+  mutate('total'=sum(n)) %>%
+  ungroup() %>%
+  filter(coverage != 'pnta') %>%
+  filter(freq %!in% c(NA, 'pnta')) %>%
+  mutate('freq'=factor(freq, levels=c('never', 'yearly', 'monthly', 'weekly', 'daily'))) %>%
+  ggplot(aes(x=coverage, y=n, fill=freq)) +
+         geom_col(lwd=.3, col='black', position=position_fill()) +
+         geom_text(aes(label=ifelse(n>5, n, NA)), position=position_fill(vjust=.5)) +
+         facet_grid(type~.) +
+         coord_flip() + cowplot::theme_cowplot() + theme(aspect.ratio=.2, strip.background=element_blank()) +
+         scale_y_continuous(expand=c(0, 0.01)) +
+         scale_fill_brewer(palette='Spectral', name='Rationing\nfrequency', direction=-1) +
+         labs(x='Healthcare coverage type', y='% of responses',
+              title='Worldwide rationing frequencies by healthcare coverage type',
+              subtitle='Not considering "NA" nor "Prefer not to answer"')
+
+# b. worldwide rationing per country income level
+data %>%
+  select(country_income_class, matches('ration_')) %>%
+  melt(id.vars='country_income_class', variable.name='type', value.name='freq') %>%
+  mutate('type'=case_when(type=='ration_insulin' ~ 'Ration or\nskip insulin',
+                          type=='ration_test' ~ 'Not testing\nblood glucose',)) %>%
+  group_by_all() %>%
+  summarize('n'=n()) %>%
+  group_by(country_income_class) %>%
+  mutate('total'=sum(n)) %>%
+  ungroup() %>%
+  filter(freq %!in% c(NA, 'pnta')) %>%
+  mutate('freq'=factor(freq, levels=c('never', 'yearly', 'monthly', 'weekly', 'daily'))) %>%
+  ggplot(aes(x=country_income_class, y=n, fill=freq)) +
+         geom_col(lwd=.3, col='black', position=position_fill()) +
+         geom_text(aes(label=n), position=position_fill(vjust=.5)) +
+         facet_grid(type~.) +
+         coord_flip() + cowplot::theme_cowplot() + theme(aspect.ratio=.2, strip.background=element_blank()) +
+         scale_y_continuous(expand=c(0, 0.01)) +
+         scale_fill_brewer(palette='Spectral', name='Rationing\nfrequency', direction=-1) +
+         labs(x='Country income level', y='% of responses',
+              title='Worldwide rationing frequencies per country income level',
+              subtitle='Not considering "NA" nor "Prefer not to answer"')
+
+# c. Rationing in top 7 represented countries
+data_top7
