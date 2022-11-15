@@ -345,3 +345,36 @@ if(PLOT) {
            labs(title='Rationing in top 7 most represented countries', x='', y='% of responses',
                 subtitle='Not considering "NA" or "Prefer not to answer"')
   }
+
+
+
+# 6. DEMOGRAPHICS --------------------------------------------------------------
+## a. worldwide ####
+data %>%
+  select(gender, T1con, usd_household_month, country_income_class) %>%
+  mutate('gender'=factor(gender, levels=c('female', 'male', 'other', 'pnta')),
+         'T1con'=factor(T1con, levels=c('patient', 'mychild', 'betterhalf', 'doc', 'pnta')),
+         'country_income_class'=factor(country_income_class, levels=c('Low', 'Middle', 'High')),
+         'usd_household_month'=cut(usd_household_month, breaks=c(0, 1000, 1500, 3000, 5000, Inf), include.lowest=T, right=F, ordered_result=T, dig.lab=5)) %>%
+  unlist() %>%
+  table() %>%
+  enframe(name='response', value='n') %>%
+  mutate('prop'=paste0('(', round(n/nrow(data)*100, 1), '%)'),
+         'characteristic'=c(rep('gender', 4), rep('connection to T1D', 4), rep('monthly household income (USD)', 5), rep('Country income level', 3))) %>%
+  select(characteristic, response, n, prop) %>%
+  gridExtra::grid.table(rows=NULL)
+
+## b. top 7 ####
+data_top7 %>%
+  select(gender, T1con, usd_household_month, country_income_class) %>%
+  mutate('gender'=factor(gender, levels=c('female', 'male', 'other', 'pnta')),
+         'T1con'=factor(T1con, levels=c('patient', 'mychild', 'betterhalf', 'doc', 'pnta')),
+         'country_income_class'=factor(country_income_class, levels=c('Low', 'Middle', 'High')),
+         'usd_household_month'=cut(usd_household_month, breaks=c(0, 1000, 1500, 3000, 5000, Inf), include.lowest=T, right=F, ordered_result=T, dig.lab=5)) %>%
+  unlist() %>%
+  table() %>%
+  enframe(name='response', value='n') %>%
+  mutate('prop'=paste0('(', round(n/nrow(data)*100, 1), '%)'),
+         'characteristic'=c(rep('gender', 4), rep('connection to T1D', 4), rep('monthly household income (USD)', 5), rep('Country income level', 3))) %>%
+  select(characteristic, response, n, prop) %>%
+  gridExtra::grid.table(rows=NULL)
