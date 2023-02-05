@@ -54,7 +54,7 @@ df_1b <- country_summary %>%
 
 if(PLOT) {
   ggplot(df_1b, aes(x=country_name, y=n, fill=top7)) +
-       geom_col(lwd=.3, col='black') +
+       geom_col(linewidth=.3, col='black') +
        geom_text(aes(label=n, col=country_income_class), hjust=-.3, fontface='bold') +
        coord_flip() + cowplot::theme_cowplot() +
        theme(legend.position=c(.7, .25), aspect.ratio=1) +
@@ -147,9 +147,9 @@ if(PLOT) {
 
 ## e. per healthcare coverage ####
 df_3e <- data_top7 %>%
-         select(coverage, starts_with('usd_sum_')) %>%
+         select(coverage, starts_with('usd_sum_') & !usd_sum_glucagon) %>%
          filter(coverage != 'pnta') %>%
-         mutate('total_sum'=category_sum(df=., cols=c('usd_sum_devices', 'usd_sum_insulins', 'usd_sum_glucagon', 'usd_sum_pen_needles', 'usd_sum_strips')))
+         mutate('total_sum'=category_sum(df=., cols=c('usd_sum_devices', 'usd_sum_insulins', 'usd_sum_pen_needles', 'usd_sum_strips')))
 
 df_3e %>%
   select(coverage, total_sum) %>%
@@ -171,9 +171,24 @@ if(PLOT) {
          labs(title='per healthcare coverage', x='OoPEs (monthly USD+1, log-scale)')
   }
 
+if(PLOT) {
+  df_3e %>%
+  select(-total_sum) %>%
+  melt(id.vars='coverage', variable.name='category') %>%
+  mutate('category'=str_remove(category, 'usd_sum_')) %>%
+  ggplot(aes(x=value+1, col=coverage)) +
+         geom_density(lwd=1) +
+         facet_wrap(~category, scales='free_x', ncol=1) +
+         scale_x_log10(expand=c(0, 0.05, 0, 0)) +
+         scale_color_brewer(palette='Set1') +
+         cowplot::theme_cowplot() +
+         theme(aspect.ratio=1) +
+         labs(title='per healthcare coverage', x='OoPEs (monthly USD+1, log-scale)')
+  }
+
 ## f. per country ####
 df_3f <- data_top7 %>%
-         mutate('total_sum'=category_sum(df=., cols=c('usd_sum_devices', 'usd_sum_insulins', 'usd_sum_glucagon', 'usd_sum_pen_needles', 'usd_sum_strips'))) %>%
+         mutate('total_sum'=category_sum(df=., cols=c('usd_sum_devices', 'usd_sum_insulins', 'usd_sum_pen_needles', 'usd_sum_strips'))) %>%
          select(country_alpha2, total_sum)
 
 df_3f %>%
@@ -265,47 +280,49 @@ if(PLOT) {
 
 # 5. RATIONING -----------------------------------------------------------------
 ## a. worldwide rationing per healthcare coverage type ####
+df_5a <- data %>%
+         select(coverage, matches('ration_')) %>%
+         melt(id.vars='coverage', variable.name='type', value.name='freq') %>%
+         mutate('type'=case_when(type=='ration_insulin' ~ 'Ration or\nskip insulin',
+                                 type=='ration_test' ~ 'Not testing\nblood glucose',)) %>%
+         group_by_all() %>%
+         summarize('n'=n()) %>%
+         group_by(coverage) %>%
+         mutate('total'=sum(n)) %>%
+         ungroup() %>%
+         filter(coverage != 'pnta') %>%
+         filter(freq %!in% c(NA, 'pnta')) %>%
+         mutate('freq'=factor(freq, levels=c('never', 'yearly', 'monthly', 'weekly', 'daily')))
+
 if(PLOT) {
-  data %>%
-    select(coverage, matches('ration_')) %>%
-    melt(id.vars='coverage', variable.name='type', value.name='freq') %>%
-    mutate('type'=case_when(type=='ration_insulin' ~ 'Ration or\nskip insulin',
-                            type=='ration_test' ~ 'Not testing\nblood glucose',)) %>%
-    group_by_all() %>%
-    summarize('n'=n()) %>%
-    group_by(coverage) %>%
-    mutate('total'=sum(n)) %>%
-    ungroup() %>%
-    filter(coverage != 'pnta') %>%
-    filter(freq %!in% c(NA, 'pnta')) %>%
-    mutate('freq'=factor(freq, levels=c('never', 'yearly', 'monthly', 'weekly', 'daily'))) %>%
-    ggplot(aes(x=coverage, y=n, fill=freq)) +
-           geom_col(lwd=.3, col='black', position=position_fill(), alpha=.75) +
-           geom_text(aes(label=ifelse(n>5, n, NA)), position=position_fill(vjust=.5)) +
-           facet_grid(type~.) +
-           coord_flip() + cowplot::theme_cowplot() + theme(aspect.ratio=.2, strip.background=element_blank()) +
-           scale_y_continuous(expand=c(0, 0.01)) +
-           scale_fill_brewer(palette='Spectral', name='Rationing\nfrequency', direction=-1) +
-           labs(x='Healthcare coverage type', y='% of responses',
-                title='Worldwide rationing frequencies by healthcare coverage type',
-                subtitle='Not considering "NA" or "Prefer not to answer"')
+  ggplot(df_5a, aes(x=coverage, y=n, fill=freq)) +
+         geom_col(lwd=.3, col='black', position=position_fill(), alpha=.75) +
+         geom_text(aes(label=ifelse(n>5, n, '')), position=position_fill(vjust=.5)) +
+         facet_grid(type~.) +
+         coord_flip() + cowplot::theme_cowplot() + theme(aspect.ratio=.2, strip.background=element_blank()) +
+         scale_y_continuous(expand=c(0, 0.01)) +
+         scale_fill_brewer(palette='Spectral', name='Rationing\nfrequency', direction=-1) +
+         labs(x='Healthcare coverage type', y='% of responses',
+              title='Worldwide rationing frequencies by healthcare coverage type',
+              subtitle='Not considering "NA" or "Prefer not to answer"')
   }
 
 ## b. worldwide rationing per country income level ####
+df_5b <- data %>%
+         select(country_income_class, matches('ration_')) %>%
+         melt(id.vars='country_income_class', variable.name='type', value.name='freq') %>%
+         mutate('type'=case_when(type=='ration_insulin' ~ 'Ration or\nskip insulin',
+                                 type=='ration_test' ~ 'Not testing\nblood glucose',)) %>%
+         group_by_all() %>%
+         summarize('n'=n()) %>%
+         group_by(country_income_class) %>%
+         mutate('total'=sum(n)) %>%
+         ungroup() %>%
+         filter(freq %!in% c(NA, 'pnta')) %>%
+         mutate('freq'=factor(freq, levels=c('never', 'yearly', 'monthly', 'weekly', 'daily')))
+
 if(PLOT) {
-  data %>%
-    select(country_income_class, matches('ration_')) %>%
-    melt(id.vars='country_income_class', variable.name='type', value.name='freq') %>%
-    mutate('type'=case_when(type=='ration_insulin' ~ 'Ration or\nskip insulin',
-                            type=='ration_test' ~ 'Not testing\nblood glucose',)) %>%
-    group_by_all() %>%
-    summarize('n'=n()) %>%
-    group_by(country_income_class) %>%
-    mutate('total'=sum(n)) %>%
-    ungroup() %>%
-    filter(freq %!in% c(NA, 'pnta')) %>%
-    mutate('freq'=factor(freq, levels=c('never', 'yearly', 'monthly', 'weekly', 'daily'))) %>%
-    ggplot(aes(x=country_income_class, y=n, fill=freq)) +
+    ggplot(df_5b, aes(x=country_income_class, y=n, fill=freq)) +
            geom_col(lwd=.3, col='black', position=position_fill(), alpha=.75) +
            geom_text(aes(label=n), position=position_fill(vjust=.5)) +
            facet_grid(type~.) +
@@ -318,26 +335,40 @@ if(PLOT) {
   }
 
 ## c. Rationing in top 7 represented countries ####
+df_5c <- data_top7 %>%
+         select(id, country_alpha2, matches('ration_')) %>%
+         melt(id.vars=c('id', 'country_alpha2'), variable.name='ration_type', value.name='freq') %>%
+         mutate('ration_type'=str_remove(ration_type, 'ration_') %>% factor(levels=c('insulin', 'test'))) %>%
+         filter(freq %in% c('never', 'yearly', 'monthly', 'weekly', 'daily')) %>%
+         mutate('freq'=factor(freq, levels=c('never', 'yearly', 'monthly', 'weekly', 'daily')),
+                'ration_yesno'=ifelse(freq=='never', 'No', 'Yes')) %>%
+         select(-id) %>%
+         group_by_all() %>%
+         summarize('n'=n()) %>%
+         group_by(country_alpha2, ration_type) %>%
+         mutate('total'=sum(n),) %>%
+         ungroup() %>%
+         mutate('pc'=n/total*100,
+                'country_alpha2'=factor(country_alpha2, levels=c('SE', 'GB', 'DE', 'PA', 'CA', 'US', 'IN')))
+
+df_5c %>%
+  select(-country_alpha2, -total, -pc) %>%
+  group_by(ration_type, freq, ration_yesno) %>%
+  summarize('total_n'=sum(n)) %>%
+  ggplot(aes(x=ration_yesno, y=total_n, fill=freq)) +
+         geom_col(linewidth=.3, col='black', width=.8) +
+         geom_text(aes(label=total_n), position=position_stack(vjust=.5)) +
+         facet_wrap(~ration_type) +
+         cowplot::theme_cowplot() + theme(aspect.ratio=2.5) +
+         scale_y_continuous(expand=c(0, 0, 0.01, 0)) +
+         scale_fill_brewer(palette='Spectral', name='Rationing\nfrequency', direction=-1) +
+         labs(title='Rationing in top 7 countries', x='Rationing?', y='Number of respondents')
+
 if(PLOT) {
-  data_top7 %>%
-    select(id, country_alpha2, matches('ration_')) %>%
-    melt(id.vars=c('id', 'country_alpha2'), variable.name='ration_type', value.name='freq') %>%
-    mutate('ration_type'=str_remove(ration_type, 'ration_') %>% factor(levels=c('insulin', 'test'))) %>%
-    filter(freq %in% c('never', 'yearly', 'monthly', 'weekly', 'daily')) %>%
-    mutate('freq'=factor(freq, levels=c('never', 'yearly', 'monthly', 'weekly', 'daily')),
-           'ration_yesno'=ifelse(freq=='never', 'No', 'Yes')) %>%
-    select(-id) %>%
-    group_by_all() %>%
-    summarize('n'=n()) %>%
-    group_by(country_alpha2, ration_type) %>%
-    mutate('total'=sum(n),) %>%
-    ungroup() %>%
-    mutate('pc'=n/total*100,
-           'country_alpha2'=factor(country_alpha2, levels=c('SE', 'GB', 'DE', 'PA', 'CA', 'US', 'IN'))) %>%
-    ggplot(aes(x=interaction(ration_type, ration_yesno, lex.order=T), y=pc, fill=freq)) +
+    ggplot(df_5c, aes(x=interaction(ration_type, ration_yesno, lex.order=T), y=pc, fill=freq)) +
            geom_hline(yintercept=c(25, 50, 75), lty=2, col='grey80') +
-           geom_col(lwd=.3, col='black', alpha=.75) +
-           geom_text(aes(label=ifelse(pc>4, n, NA)), position=position_stack(vjust=.5)) +
+           geom_col(linewidth=.3, col='black', alpha=.75) +
+           geom_text(aes(label=ifelse(pc > 4, n, '')), position=position_stack(vjust=.5)) +
            cowplot::theme_cowplot() + theme(aspect.ratio=4, axis.text.x=element_text(angle=90)) +
            scale_y_continuous(expand=c(0, 0)) +
            facet_grid(~country_alpha2) +
@@ -378,3 +409,20 @@ data_top7 %>%
          'characteristic'=c(rep('gender', 4), rep('connection to T1D', 4), rep('monthly household income (USD)', 5), rep('Country income level', 3))) %>%
   select(characteristic, response, n, prop) %>%
   gridExtra::grid.table(rows=NULL)
+
+
+# 7. EXTRA ANALYSES --------------------------------------------------------------
+## % CGM & pump users per country
+data_top7 %>%
+  select('country'=country_alpha2, insulin_intake_pump, cgm_yesno) %>%
+  mutate('cgm_yesno'=ifelse(cgm_yesno=='yes', TRUE, FALSE)) %>%
+  group_by(country) %>%
+  summarize('n_respondents'=n(),
+            'n_pump'=sum(insulin_intake_pump, na.rm=T),
+            'n_cgm'=sum(cgm_yesno, na.rm=T),
+            'pc_pump'=round(mean(insulin_intake_pump, na.rm=T)*100, 2),
+            'pc_cgm'=round(mean(cgm_yesno, na.rm=T)*100, 2)) %>%
+  arrange(desc(pc_cgm), desc(pc_pump)) %>%
+  gridExtra::grid.table(rows=NULL)
+
+

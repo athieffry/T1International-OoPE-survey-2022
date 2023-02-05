@@ -75,15 +75,15 @@ to_keep <- data %>%
 
 data %<>% filter(to_keep) # 54 removed - new dim: 1019 x 138
 
-# f. investigate duplicated records
-any(duplicated(data)) # none
+# f. remove manually-identified duplicates
+data %<>% filter(id %!in% c(807, 903)) # 2 removed - new dim: 1017 x 138
 
 # g. remove timestamp
 data %<>% select(-timestamp) # new dim: 1019 x 137
 
 # h. add country info
     # remove entries without declared country
-    data %<>% filter(!is.na(country_name)) # 5 removed - new dim: 1014 x 137
+    data %<>% filter(!is.na(country_name)) # 5 removed - new dim: 1012 x 137
     # adapt country names to match with data
     country_info %<>% mutate(country_name = case_when(country_name == 'Bahamas (the)' ~ 'Bahamas, The',
                                                       country_name == 'Myanmar' ~ 'Burma',
@@ -91,7 +91,7 @@ data %<>% select(-timestamp) # new dim: 1019 x 137
     # standardize naming for South Korea in data
     data %<>% mutate('country_name'=ifelse(country_name=='Korea, South', 'South Korea', country_name))
     # join country info to data
-    data %<>% left_join(country_info, by='country_name') # new dim: 1014 x 141
+    data %<>% left_join(country_info, by='country_name') # new dim: 1012 x 141
 
 
 
@@ -108,14 +108,14 @@ data %<>%
   # add conversion rate to USD
   left_join(usd_rate_table, by=c('currency_symbol'='currency')) %>%
   # remove unnecessary columns
-  select(-currency, -currency_other_desc, -currency_other_desc_manual) # 1014 records x 140 variables
+  select(-currency, -currency_other_desc, -currency_other_desc_manual) # 1012 records x 140 variables
 
 # c. convert all costs to USD (in-situ)
   # divide amounts by USD factor
   data %<>% mutate(across(starts_with('cost'), \(x) divide_by(x, currency_usd_factor)))
 
   # remove unnecessary currency columns
-  data %<>% select(-matches('currency')) # 1014 entries x 138 variables
+  data %<>% select(-matches('currency')) # 1012 entries x 138 variables
 
   # rename columns from "cost_xxx" to "usd_xxx"
   colnames(data) <- colnames(data) %>% str_replace_all('cost_', 'usd_')
@@ -154,7 +154,7 @@ data %<>%
   # id 70 - South Korean participant declares USD currency. While possible, numbers are way too high (USD) or way too low (KRW). Removed.
   # id 725 - Mali participant declares EUR currency. While possible, numbers are way too high in EUR. XOF cannot be confirmed. Removed.
   # id 963 - costs do not make sense in any of the Venezuelan currencies, either way too cheap, either way too expensive. Removed.
-  data %<>% filter(id %!in% c(70, 963, 725)) # new dim: 1011 x 138
+  data %<>% filter(id %!in% c(70, 963, 725)) # new dim: 1009 x 138
 
 
 
@@ -170,7 +170,7 @@ if(PLOT) {
   count(data, T1con) %>%
     mutate('T1con'=fct_reorder(T1con, n)) %>%
     ggplot(aes(x=T1con, y=n)) +
-           geom_col(lwd=.2, col='black') +
+           geom_col(linewidth=.3, col='black') +
            coord_flip() +
            geom_text(aes(label=n), hjust=-.3) +
            theme(aspect.ratio=.5) + scale_y_continuous(expand=c(0, 0, .1, 0)) +
@@ -217,7 +217,6 @@ if(PLOT) {
            scale_y_continuous(expand=c(.01, 0, .1, 0)) +
            theme(aspect.ratio=.5) +
            labs(title='Country distribution', subtitle='69 countries represented, 0 NA', x='Country alpha-3 code (ISO 3166)')
-
 
   worldmap <- joinCountryData2Map(country_summarized_df, joinCode='ISO3', nameJoinColumn='country_alpha3', verbose=F)
   mapCountryData(worldmap, nameColumnToPlot='n', missingCountryCol='grey70', colourPalette='heat', borderCol='black', catMethod='pretty', oceanCol='lightblue', numCats=451)
@@ -322,6 +321,7 @@ if(PLOT) {
     select(starts_with('covid_impact_') &! 'covid_impact_yesno') %>%
     multiply_by(1) %>%
     set_colnames(colnames(.) %>% str_remove('covid_impact_')) %>%
+    mutate('unaffected'=ifelse(rowSums(.)==0, 1, 0)) %>%
     eulerr::euler(shape='ellipse') %>% plot(quantities=T, main='COVID impact')
   }
 
@@ -554,7 +554,6 @@ if(PLOT) {
               subtitle='Currency: USD',
               x='USD, log-scale',
               caption='0 USD are not shown')
-
   }
 
 # s. clean-up OoPEs: set costs to NA if no required field was checked
@@ -606,4 +605,9 @@ if(PLOT) {
 saveRDS(data, '1. data/c. clean/cleaned_data.rds')
 
 # b. TSV format
+top7_countries <- data %>% count(country_alpha2) %>% arrange(desc(n)) %>% head(7) %>% pull(country_alpha2)
+
+data %<>% mutate('in_top7'=ifelse(country_alpha2 %in% top7_countries, T, F)) %>%
+          select(id, in_top7, everything())
+
 write_tsv(data, '1. data/c. clean/cleaned_data.tsv', col_names=T)
