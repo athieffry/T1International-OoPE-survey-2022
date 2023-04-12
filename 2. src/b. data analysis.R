@@ -8,6 +8,7 @@ library(forcats)
 library(RColorBrewer)
 library(ggrepel)
 library(scales)
+library(WriteXLS)
 '%!in%' <- Negate('%in%')
 'at' <- as_tibble
 'h' <- head
@@ -22,6 +23,8 @@ setwd('~/Dropbox/T1International-OoPE-survey-2022')
 SANITY_CHECK=F
 # plots
 PLOT=F
+# export XLSX
+EXPORT=F
 
 
 
@@ -294,6 +297,13 @@ df_5a <- data %>%
          filter(freq %!in% c(NA, 'pnta')) %>%
          mutate('freq'=factor(freq, levels=c('never', 'yearly', 'monthly', 'weekly', 'daily')))
 
+if(EXPORT) {
+  df_5a %>%
+    mutate('type'=str_replace(type, '\\n', ' '),
+           'percent'=round(n/total*100, 2)) %>%
+    WriteXLS('3. results/d. Tables/Rationing - worldwide - by hc coverage.xlsx', v=F, row.names=F, col.names=T, AdjWidth=T, BoldHeaderRow=T)
+}
+
 if(PLOT) {
   ggplot(df_5a, aes(x=coverage, y=n, fill=freq)) +
          geom_col(lwd=.3, col='black', position=position_fill(), alpha=.75) +
@@ -320,6 +330,13 @@ df_5b <- data %>%
          ungroup() %>%
          filter(freq %!in% c(NA, 'pnta')) %>%
          mutate('freq'=factor(freq, levels=c('never', 'yearly', 'monthly', 'weekly', 'daily')))
+
+if(EXPORT) {
+  df_5b %>%
+    mutate('type'=str_replace(type, '\\n', ' '),
+           'percent'=round(n/total*100, 2)) %>%
+    WriteXLS('3. results/d. Tables/Rationing - worldwide - by country income level.xlsx', v=F, row.names=F, col.names=T, AdjWidth=T, BoldHeaderRow=T)
+}
 
 if(PLOT) {
     ggplot(df_5b, aes(x=country_income_class, y=n, fill=freq)) +
@@ -351,18 +368,27 @@ df_5c <- data_top7 %>%
          mutate('pc'=n/total*100,
                 'country_alpha2'=factor(country_alpha2, levels=c('SE', 'GB', 'DE', 'PA', 'CA', 'US', 'IN')))
 
-df_5c %>%
-  select(-country_alpha2, -total, -pc) %>%
-  group_by(ration_type, freq, ration_yesno) %>%
-  summarize('total_n'=sum(n)) %>%
-  ggplot(aes(x=ration_yesno, y=total_n, fill=freq)) +
-         geom_col(linewidth=.3, col='black', width=.8) +
-         geom_text(aes(label=total_n), position=position_stack(vjust=.5)) +
-         facet_wrap(~ration_type) +
-         cowplot::theme_cowplot() + theme(aspect.ratio=2.5) +
-         scale_y_continuous(expand=c(0, 0, 0.01, 0)) +
-         scale_fill_brewer(palette='Spectral', name='Rationing\nfrequency', direction=-1) +
-         labs(title='Rationing in top 7 countries', x='Rationing?', y='Number of respondents')
+if(EXPORT) {
+  df_5c %>%
+    rename('percent'='pc') %>%
+    mutate('percent'=round(percent, 2)) %>%
+    WriteXLS('3. results/d. Tables/Rationing - Top7.xlsx', v=F, row.names=F, col.names=T, AdjWidth=T, BoldHeaderRow=T)
+}
+
+if(PLOT) {
+  df_5c %>%
+    select(-country_alpha2, -total, -pc) %>%
+    group_by(ration_type, freq, ration_yesno) %>%
+    summarize('total_n'=sum(n)) %>%
+    ggplot(aes(x=ration_yesno, y=total_n, fill=freq)) +
+           geom_col(linewidth=.3, col='black', width=.8) +
+           geom_text(aes(label=total_n), position=position_stack(vjust=.5)) +
+           facet_wrap(~ration_type) +
+           cowplot::theme_cowplot() + theme(aspect.ratio=2.5) +
+           scale_y_continuous(expand=c(0, 0, 0.01, 0)) +
+           scale_fill_brewer(palette='Spectral', name='Rationing\nfrequency', direction=-1) +
+           labs(title='Rationing in top 7 countries', x='Rationing?', y='Number of respondents')
+}
 
 if(PLOT) {
     ggplot(df_5c, aes(x=interaction(ration_type, ration_yesno, lex.order=T), y=pc, fill=freq)) +
@@ -381,35 +407,42 @@ if(PLOT) {
 
 # 6. DEMOGRAPHICS --------------------------------------------------------------
 ## a. worldwide ####
-data %>%
-  select(gender, T1con, usd_household_month, country_income_class) %>%
-  mutate('gender'=factor(gender, levels=c('female', 'male', 'other', 'pnta')),
-         'T1con'=factor(T1con, levels=c('patient', 'mychild', 'betterhalf', 'doc', 'pnta')),
-         'country_income_class'=factor(country_income_class, levels=c('Low', 'Middle', 'High')),
-         'usd_household_month'=cut(usd_household_month, breaks=c(0, 1000, 1500, 3000, 5000, Inf), include.lowest=T, right=F, ordered_result=T, dig.lab=5)) %>%
-  unlist() %>%
-  table() %>%
-  enframe(name='response', value='n') %>%
-  mutate('prop'=paste0('(', round(n/nrow(data)*100, 1), '%)'),
-         'characteristic'=c(rep('gender', 4), rep('connection to T1D', 4), rep('monthly household income (USD)', 5), rep('Country income level', 3))) %>%
-  select(characteristic, response, n, prop) %>%
-  gridExtra::grid.table(rows=NULL)
+df_6a <- data %>%
+         select(gender, T1con, usd_household_month, country_income_class) %>%
+         mutate('gender'=factor(gender, levels=c('female', 'male', 'other', 'pnta')),
+                'T1con'=factor(T1con, levels=c('patient', 'mychild', 'betterhalf', 'doc', 'pnta')),
+                'country_income_class'=factor(country_income_class, levels=c('Low', 'Middle', 'High')),
+                'usd_household_month'=cut(usd_household_month, breaks=c(0, 1000, 1500, 3000, 5000, Inf), include.lowest=T, right=F, ordered_result=T, dig.lab=5)) %>%
+         unlist() %>%
+         table() %>%
+         enframe(name='response', value='n') %>%
+         mutate('prop'=paste0('(', round(n/nrow(data)*100, 1), '%)'),
+                'characteristic'=c(rep('gender', 4), rep('connection to T1D', 4), rep('monthly household income (USD)', 5), rep('Country income level', 3))) %>%
+         select(characteristic, response, n, prop) %>%
+         rbind(c('monthly household income (USD)', 'NA', sum(is.na(data$usd_household_month)), '(36%)')) %>%
+         arrange(characteristic, response)
+
+gridExtra::grid.table(df_6a, rows=NULL)
+WriteXLS::WriteXLS(df_6a, '3. results/d. Tables/Demographics - Worldwide.xlsx', verbose=F, row.names=F, col.names=T, AdjWidth=T, BoldHeaderRow=T)
 
 ## b. top 7 ####
-data_top7 %>%
-  select(gender, T1con, usd_household_month, country_income_class) %>%
-  mutate('gender'=factor(gender, levels=c('female', 'male', 'other', 'pnta')),
-         'T1con'=factor(T1con, levels=c('patient', 'mychild', 'betterhalf', 'doc', 'pnta')),
-         'country_income_class'=factor(country_income_class, levels=c('Low', 'Middle', 'High')),
-         'usd_household_month'=cut(usd_household_month, breaks=c(0, 1000, 1500, 3000, 5000, Inf), include.lowest=T, right=F, ordered_result=T, dig.lab=5)) %>%
-  unlist() %>%
-  table() %>%
-  enframe(name='response', value='n') %>%
-  mutate('prop'=paste0('(', round(n/nrow(data)*100, 1), '%)'),
-         'characteristic'=c(rep('gender', 4), rep('connection to T1D', 4), rep('monthly household income (USD)', 5), rep('Country income level', 3))) %>%
-  select(characteristic, response, n, prop) %>%
-  gridExtra::grid.table(rows=NULL)
+df_6b <- data_top7 %>%
+         select(gender, T1con, usd_household_month, country_income_class) %>%
+         mutate('gender'=factor(gender, levels=c('female', 'male', 'other', 'pnta')),
+                'T1con'=factor(T1con, levels=c('patient', 'mychild', 'betterhalf', 'doc', 'pnta')),
+                'country_income_class'=factor(country_income_class, levels=c('Low', 'Middle', 'High')),
+                'usd_household_month'=cut(usd_household_month, breaks=c(NA, 0, 1000, 1500, 3000, 5000, Inf), include.lowest=T, right=F, ordered_result=T, dig.lab=5, exclude=NULL)) %>%
+         unlist() %>%
+         table() %>%
+         enframe(name='response', value='n') %>%
+         mutate('prop'=paste0('(', round(n/nrow(data_top7)*100, 1), '%)'),
+                'characteristic'=c(rep('gender', 4), rep('connection to T1D', 4), rep('monthly household income (USD)', 5), rep('Country income level', 3))) %>%
+         select(characteristic, response, n, prop) %>%
+         rbind(c('monthly household income (USD)', 'NA', sum(is.na(data_top7$usd_household_month)), '(36.7%)')) %>%
+         arrange(characteristic, response)
 
+gridExtra::grid.table(df_6b, rows=NULL)
+WriteXLS::WriteXLS(df_6b, '3. results/d. Tables/Demographics - Top 7.xlsx', verbose=F, row.names=F, col.names=T, AdjWidth=T, BoldHeaderRow=T)
 
 # 7. EXTRA ANALYSES --------------------------------------------------------------
 ## % CGM & pump users per country
