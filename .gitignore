@@ -7,10 +7,10 @@
 **/.DS_Store
 
 # Paperwork folder
-Paperwork
+Paperwork/
 
 # Internal presentations
-3.\ results/Presentations
+3. results/Presentations/
 
 # History files
 .Rhistory
