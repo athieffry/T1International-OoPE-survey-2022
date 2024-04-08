@@ -29,7 +29,7 @@ EXPORT=F
 
 
 # 1. READ CLEANED DATA ---------------------------------------------------------
-data <- readRDS('1. data/c. clean/cleaned_data.rds')
+data <- readRDS('1. data/c. clean/cleaned_data.rds') # 1,008 x 138
 
 
 
@@ -83,7 +83,7 @@ if(PLOT) {
     mutate('total'=sum(n),
            'prop'=n/total*100) %>%
     ggplot(aes(x=country_alpha2, y=prop, fill=coverage)) +
-           geom_col(lwd=.3, col='black', alpha=.8) +
+           geom_col(linewidth=.3, col='black', alpha=.8) +
            geom_text(aes(label=n, y=prop), position=position_stack(vjust=.5), col='white') +
            scale_fill_manual(values=healthcare_coverage_colors, name='Healthcare\ncoverage') +
            scale_y_continuous(expand=c(0, 0.01)) +
@@ -237,22 +237,30 @@ if(PLOT) {
 # 4. COVID-19 IMPACT -----------------------------------------------------------
 ## a. Impact overview (yes/no) ####
 if(PLOT) {
-  data_top7 %>%
-    group_by(country_alpha2) %>%
-    count(covid_impact_yesno) %>%
-    group_by(country_alpha2) %>%
-    mutate('total'=sum(n),
-           'pc'=n/total*100,
-           'covid_impact_yesno'=ifelse(covid_impact_yesno, 'Affected', 'Unaffected') %>% factor(levels=c('Unaffected', 'Affected')),
-           'country_alpha2'=country_alpha2 %>% factor(levels=c('SE', 'GB', 'DE', 'CA', 'IN', 'US', 'PA'))) %>%
-    ggplot(aes(x=country_alpha2, y=pc, fill=covid_impact_yesno)) +
-           geom_col(lwd=.3, col='black', alpha=.55) +
-           geom_hline(yintercept=50, lty=2) +
-           geom_text(aes(label=n), position=position_stack(vjust=.5)) +
-           cowplot::theme_cowplot() + theme(aspect.ratio=1.2) +
-           scale_y_continuous(expand=c(0.01, 0)) +
-           scale_fill_brewer(palette='Set1', name='', direction=-1) +
-           labs(title='Overview of COVID-19 impact', x='Top 7 represented countries', y='% of responses')
+  df_4a <- data_top7 %>%
+           group_by(country_alpha2) %>%
+           count(covid_impact_yesno) %>%
+           group_by(country_alpha2) %>%
+           mutate('total'=sum(n),
+                  'pc'=n/total*100,
+                  'covid_impact_yesno'=ifelse(covid_impact_yesno, 'Affected', 'Unaffected') %>% factor(levels=c('Unaffected', 'Affected')),
+                  'country_alpha2'=country_alpha2 %>% factor(levels=c('SE', 'GB', 'DE', 'CA', 'IN', 'US', 'PA')))
+
+  df_4a %>%
+    mutate('pc'=round(pc, 2)) %>%
+    unite('n', c('n', 'pc'), sep=' (') %>%
+    mutate('n'=paste0(n, '%)')) %>%
+    select(-total) %>%
+    pivot_wider(names_from='covid_impact_yesno', values_from='n')
+
+  ggplot(df_4a, aes(x=country_alpha2, y=pc, fill=covid_impact_yesno)) +
+         geom_col(lwd=.3, col='black', alpha=.55) +
+         geom_hline(yintercept=50, lty=2) +
+         geom_text(aes(label=n), position=position_stack(vjust=.5)) +
+         cowplot::theme_cowplot() + theme(aspect.ratio=1.2) +
+         scale_y_continuous(expand=c(0.01, 0)) +
+         scale_fill_brewer(palette='Set1', name='', direction=-1) +
+         labs(title='Overview of COVID-19 impact', x='Top 7 represented countries', y='% of responses')
   }
 
 ## b. Impact heatmap details (yes) ####

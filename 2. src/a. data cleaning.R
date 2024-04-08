@@ -44,7 +44,7 @@ extract_currency <- function(str) {
 
 # 1. READ ----------------------------------------------------------------------
 # a. raw data
-data <- readr::read_tsv('1. data/a. raw/Type1DiabetesOutofPo_DATA_LABELS_2022-10-13.tsv', col_names=T, trim_ws=T) # 1122 x 140
+data <- readr::read_tsv('1. data/a. raw/Type1DiabetesOutofPo_DATA_LABELS_2022-10-13.tsv', col_names=T, trim_ws=T, show_col_types=F) # 1122 x 140
 # b. new data column names
 new_col_names <- readr::read_tsv('1. data/c. clean/simplified_column_names.tsv', col_names=T, trim_ws=T)
 # c. country info
@@ -77,6 +77,7 @@ data %<>% filter(to_keep) # 54 removed - new dim: 1019 x 138
 
 # f. remove manually-identified duplicates
 data %<>% filter(id %!in% c(807, 903)) # 2 removed - new dim: 1017 x 138
+data %<>% filter(id != 438) # 438 and 442 are totally duplicated (except timestamp): remove one
 
 # g. remove timestamp
 data %<>% select(-timestamp) # new dim: 1019 x 137
@@ -91,7 +92,7 @@ data %<>% select(-timestamp) # new dim: 1019 x 137
     # standardize naming for South Korea in data
     data %<>% mutate('country_name'=ifelse(country_name=='Korea, South', 'South Korea', country_name))
     # join country info to data
-    data %<>% left_join(country_info, by='country_name') # new dim: 1012 x 141
+    data %<>% left_join(country_info, by='country_name') # new dim: 1011 x 141
 
 
 
@@ -154,7 +155,7 @@ data %<>%
   # id 70 - South Korean participant declares USD currency. While possible, numbers are way too high (USD) or way too low (KRW). Removed.
   # id 725 - Mali participant declares EUR currency. While possible, numbers are way too high in EUR. XOF cannot be confirmed. Removed.
   # id 963 - costs do not make sense in any of the Venezuelan currencies, either way too cheap, either way too expensive. Removed.
-  data %<>% filter(id %!in% c(70, 963, 725)) # new dim: 1009 x 138
+  data %<>% filter(id %!in% c(70, 963, 725)) # new dim: 1008 x 138
 
 
 
@@ -189,7 +190,7 @@ if(PLOT) {
   count(data, gender) %>%
     mutate('gender'=fct_reorder(gender, n)) %>%
     ggplot(aes(x=gender, y=n)) +
-           geom_col(lwd=.2, col='black') +
+           geom_col(linewidth=.2, col='black') +
            coord_flip() +
            geom_text(aes(label=n), hjust=-.3) +
            theme(aspect.ratio=.5) + scale_y_continuous(expand=c(0, 0, .1, 0)) +
