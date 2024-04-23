@@ -18,8 +18,9 @@ Paperwork/
 3.\ results/c.\ Figures\ -\ final/Tables.xlsx
 3.\ results/d.\ Tables
 
-# Raw data with comments and open-ended questions (available on demand)
+# Raw and clean data with comments and open-ended questions (available on demand)
 1.\ data/a.\ raw/
+1.\ data/c.\ clean/
 
 # History files
 .Rhistory
